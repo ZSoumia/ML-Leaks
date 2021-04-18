@@ -3,7 +3,8 @@ from torch.utils.data import DataLoader
 from torchvision import  transforms
 import numpy as np
 from torch.utils.data.sampler import SubsetRandomSampler
-
+from torch.utils.data import DataLoader
+from datasets.attack_dataset import *  
 def get_datasets(dataset_name="mnist"):
     """
     Loads clean original datasets.
@@ -48,36 +49,40 @@ def get_dataloaders(batch_size=32,dataset_name="mnist"):
     target_member1_sampler = SubsetRandomSampler(target_member1)
     target_N_member1_sampler = SubsetRandomSampler(target_N_member1)
 
-    shadow_train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, 
+    shadow_train_loader = DataLoader(train_data, batch_size=batch_size, 
                                            sampler=train_shadow1_sampler)
-    out_shadow_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size,
+    out_shadow_loader = DataLoader(train_data, batch_size=batch_size,
                                                 sampler=outshadow1_sampler)
 
-    target_train_member_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, 
+    target_train_member_loader = DataLoader(train_data, batch_size=batch_size, 
                                            sampler=target_member1_sampler)
-    target_train_NMemember_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size,
+    target_train_NMemember_loader = DataLoader(train_data, batch_size=batch_size,
                                                 sampler=target_N_member1_sampler)
 
     # For test set
-    split_portion = .5
-    # Creating data indices for training  splits:
-    test_size = len(test_data)
-    indices = list(range(train_size))
-    split1 = int(np.floor(split_portion *  test_size))
-
-    test_shadow2, target_member2 = indices[:split1], indices[split_portion:]
-    # Creating PT data samplers and loaders:
-    test_shadow2_sampler = SubsetRandomSampler(test_shadow2)
     
-    target_member2_sampler = SubsetRandomSampler(target_member2)
-
-    shadow_test_loader = torch.utils.data.DataLoader(test_data, batch_size=batch_size, 
-                                           sampler=test_shadow2_sampler)
-    target_test_loader = torch.utils.data.DataLoader(test_data, batch_size=batch_size, 
-                                           sampler=target_member2_sampler)
+    test_loader = DataLoader(test_data, batch_size=batch_size)
    
-
     return {
         'DShadow_train' : shadow_train_loader,
-        'Dshadow_train_test'
+        'DShadow_out' : out_shadow_loader,
+        'target_train' : target_train_member_loader, # Used to train the target model
+        'target_eval' : target_train_NMemember_loader, # Not part of the target model training
+        'test_loader' : test_loader
     }
+
+
+def get_attack_train_test_loaders(dataset_train_path,dataset_test_path,batch_size=32):
+    
+    train_dataset = Attack_dataset(dataset_train_path)
+    test_dataset = Attack_dataset(dataset_test_path)
+
+    
+    train_loader = DataLoader(train_dataset, batch_size=batch_size,shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size,shuffle=True)
+
+    return {
+        'train_loader' : train_loader,
+        'test_loader' : test_loader
+    }
+
