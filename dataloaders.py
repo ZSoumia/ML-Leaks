@@ -13,14 +13,23 @@ def get_datasets(dataset_name="mnist"):
     OUTPUT:
         train_data, test_data (datasets) : the two test/train portions of the original datasets
     """
-    transform = transforms.Compose([transforms.ToTensor()])
+    transforms_mnist = transforms.Compose([transforms.ToTensor()])
+    transforms_cifar10_train = transforms.Compose([transforms.RandomHorizontalFlip(p=0.5),
+                                                    transforms.RandomCrop(32, padding=4),
+                                                    transforms.ToTensor(),
+                                                    transforms.Normalize([0, 0, 0], [1, 1, 1])
+                                                    ])
+    transforms_cifar10_test = transforms.Compose([
+                                    transforms.ToTensor(),
+                                    transforms.Normalize([0, 0, 0], [1, 1, 1])
+                            ])
     if dataset_name == 'mnist':
-        train_data = datasets.MNIST(root='./data', train=True, transform=transform,download=True)
-        test_data = datasets.MNIST(root='./data', train=False,transform=transform,download=True)
+        train_data = datasets.MNIST(root='./data', train=True, transform=transforms_mnist,download=True)
+        test_data = datasets.MNIST(root='./data', train=False,transform=transforms_mnist,download=True)
 
     elif dataset_name == 'cifar10':
-        train_data =  datasets.CIFAR10(root='./data', train=True, transform=transform,download=True)
-        test_data = datasets.CIFAR10(root='./data', train=False, transform=transform,download=True)
+        train_data =  datasets.CIFAR10(root='./data', train=True, transform=transforms_cifar10_train ,download=True)
+        test_data = datasets.CIFAR10(root='./data', train=False, transform=transforms_cifar10_test,download=True)
     return  train_data, test_data
 
 def get_dataloaders(batch_size=32,dataset_name="mnist"):

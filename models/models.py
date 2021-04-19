@@ -1,4 +1,5 @@
 from torch import nn
+
 """
 On CIFAR datasets, we train a standard convolutional neuralnetwork (CNN) with two convolution
  and max pooling layersplus a fully connected layer of size128and aSoftMaxlayer.We  useTanhas 
@@ -44,13 +45,19 @@ class Cifar10_classifier(nn.Module):
 
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
         self.tanh = nn.Tanh()
-
+        self.dropout1 = nn.Dropout(0.2)
+        self.batch_norm = nn.BatchNorm1d(16 * 5 * 5)
     def forward(self, x):
         x = self.tanh(self.conv1(x))
+
         x = self.pool(x)
+
         x = self.tanh(self.conv2(x))
         x = self.pool(x)
+        x = self.dropout1(x)
+
         x = x.view(-1, 16 * 5 * 5) # flattening
+        x = self.batch_norm(x)
         x = self.tanh(self.fc1(x))
         x = self.fc2(x)
         return x
@@ -59,15 +66,20 @@ class Attack_classifier(nn.Module):
     """ Attack network """
     def __init__(self,in_features,out_features=2):
         super().__init__()
+       
         self.fc1 = nn.Linear(in_features=in_features, out_features=64)
         self.fc2 = nn.Linear(in_features=64, out_features=out_features)
         self.tanh = nn.Tanh()
         self.softmax = nn.Softmax(dim=-1)
+        self.dropout = nn.Dropout(0.4)
 
 
     def forward(self, x):
-
-        x = self.tanh(self.fc1(x))       
+        x = self.tanh(self.fc1(x))
+        x = self.dropout(x)      
         x = self.fc2(x)
+        x = self.tanh(x)
+        x = self.dropout(x)
         x = self.softmax(x)
         return x
+
