@@ -45,19 +45,19 @@ class Cifar10_classifier(nn.Module):
 
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
         self.tanh = nn.Tanh()
-        self.dropout1 = nn.Dropout(0.2)
+        self.dropout1 = nn.Dropout(0.1)
         self.batch_norm = nn.BatchNorm1d(16 * 5 * 5)
     def forward(self, x):
         x = self.tanh(self.conv1(x))
-
+        x = self.dropout1(x)
         x = self.pool(x)
 
         x = self.tanh(self.conv2(x))
         x = self.pool(x)
-        x = self.dropout1(x)
+        
 
         x = x.view(-1, 16 * 5 * 5) # flattening
-        x = self.batch_norm(x)
+        #x = self.batch_norm(x)
         x = self.tanh(self.fc1(x))
         x = self.fc2(x)
         return x
