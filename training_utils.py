@@ -6,7 +6,6 @@ from pandas import DataFrame
 import os
 from sklearn.metrics import precision_score,recall_score , accuracy_score
 import numpy as np
-from sklearn.ensemble import RandomForestRegressor
 
 def display_batch(dataloader,Nbr_images = 6, dataset_name ="mnist"):
     """
@@ -135,20 +134,3 @@ def save_training_loss(loss,file_name):
         os.mkdir(outdir)
     fullname = os.path.join(outdir, os.path.basename(file_name)) 
     df.to_csv(fullname, index=False)
-
-
-def train_random_forests(x_train,y_train,n_estimators=1000):
-    rf = RandomForestRegressor(n_estimators = 1000, random_state = 42)
-    rf.fit(x_train, y_train)
-    return rf
-
-def eval_random_forests(x_test,y_test,model):
-    predictions = model.predict(x_test)
-    errors = abs(predictions - y_test)
-    accuracy = accuracy_score(y_test,predictions)
-
-    precision = precision_score(y_test,predictions,average='binary')
-    recall = recall_score(y_test,predictions,average='binary')
-    print('\nAverage Val Loss: {:.4f}, Val Accuracy: ({:.3f}%) , precision:  {:.4f}, recall :  {:.4f}\n'.format(
-        errors, accuracy,precision,recall ))
-    return accuracy ,precision, recall 
